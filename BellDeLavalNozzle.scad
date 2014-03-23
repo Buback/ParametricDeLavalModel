@@ -36,11 +36,11 @@ rotate_extrude(convexity = 10, $fn = 100){
 		divergent();
 		trimflat();
 	}
-	*combustionChamber();
+	//combustionChamber();
+	//strutProfile(); //uncomment for solid support around the nozzle, instead of struts
 }
 }
-
-	struts(6);
+struts(6); //produces X number of struts around the throat for support
 
 
 //--------------Modules-------------
@@ -131,17 +131,22 @@ module struts(numbStruts){
 		   rotate( i * 360 / numbStruts, [0, 1, 0])
 			translate([Rt,0,0])//translates to throat radius
 			linear_extrude(height=y, center=true) 
-				hull(){
-					polygon(points=[[Rc-Rt,Rc-Rt+y],[y,y+y],[Rc-Rt,y]]);
-					mirror([0,1,0])
-					difference(){
-					polygon(points=[p0,[cos(Da)*y,-sin(Da)*y],p1]);
-					translate([0,Rc,0])
-					square([Rc,Rc]);
-							translate([cos(Da)*y,-sin(Da)*y,0])
-							bezierBell(p0,p1,p2,30);//creates a bezier to trim strut
-					}
-				}
+				strutProfile();
+		}
+	}
+}
+//---------------
+//create the profile for the struts. can be used alone to create a solid support (for mounting holes, etc.)
+module strutProfile(){
+	hull(){
+		polygon(points=[[Rc-Rt,Rc-Rt+y],[y,y+y],[Rc-Rt,y]]);
+		mirror([0,1,0])
+		difference(){
+		polygon(points=[p0,[cos(Da)*y,-sin(Da)*y],p1]);
+		translate([0,Rc,0])
+		square([Rc,Rc]);
+				translate([cos(Da)*y,-sin(Da)*y,0])
+				bezierBell(p0,p1,p2,30);//creates a bezier to trim strut
 		}
 	}
 }
