@@ -6,12 +6,12 @@ Great Info here: http://www.braeunig.us/space/propuls.htm
 
 //Radii
 Re = 20;		//Divergent nozzle exit radius. 
-Rt = 2.5;	 	//Throat radius. Wierd shapes can happen at low expansion ratios
+Rt = 1.5;	 	//Throat radius. Wierd shapes can happen at low expansion ratios
 Rc = 10; 	//combution chamber radius. 
 
 //Angles
 Da = 30; //Divergent section angle. typ 12-18 deg. smaller angle is more efficient but longer and therefore heavier. 15 is standard as a compromise.
-Ca = 45; //Convergent section angle. typ 20-45 deg. Not as critical as Da.
+Ca = 30; //Convergent section angle. typ 20-45 deg. Not as critical as Da.
 
 Cn= 15; //conic approximation nozzle at 15 deg
 Ln = (Re-Rt)*(sin(90)/sin (Cn));  //Conic Nozzle divergent section length, as determined by Da
@@ -66,7 +66,7 @@ module throat(){
 		translate([x,0,0]){ 
 			translate([-(cos(Ca)*z),sin(Ca)*z,0])
 			rotate(a=-Ca)
-			square([Rt/2,Rc*2]);
+			square([y*3,Rc*2]);
 		}
 //Trims off combustion chamber at Rc. also in CC module
 		translate([Rc-Rt,0,0])
@@ -100,7 +100,7 @@ module convergent(){
 		translate([x,0,0]){
 			translate([-(cos(Ca)*x),sin(Ca)*x,0])
 			rotate(a=-Ca)
-			square([y,Rc*2]);
+			square([y,Rc*5]);
 		}
 //Trims off combustion chamber at Rc. also in throat module.
 		translate([Rc-Rt,0,0])
@@ -135,19 +135,22 @@ module struts(numbStruts){
 		}
 	}
 }
-//---------------
-//create the profile for the struts. can be used alone to create a solid support (for mounting holes, etc.)
+
 module strutProfile(){
-	hull(){
-		polygon(points=[[Rc-Rt,Rc-Rt+y],[y,y+y],[Rc-Rt,y]]);
-		mirror([0,1,0])
-		difference(){
-		polygon(points=[p0,[cos(Da)*y,-sin(Da)*y],p1]);
-		translate([0,Rc,0])
-		square([Rc,Rc]);
-				translate([cos(Da)*y,-sin(Da)*y,0])
-				bezierBell(p0,p1,p2,30);//creates a bezier to trim strut
+	difference(){
+		hull(){
+			polygon(points=[[Rc-Rt,(sin(90-Ca)*((Rc-Rt)/cos(90-Ca))+y)],[y,y+y],[Rc-Rt,y+y]]);
+			mirror([0,1,0])
+			difference(){
+			polygon(points=[p0,[cos(Da)*y,-sin(Da)*y],p1]);
+			translate([0,Rc,0])
+			square([Rc,Rc]);
+					translate([cos(Da)*y,-sin(Da)*y,0])
+					bezierBell(p0,p1,p2,30);//creates a bezier to trim strut
+			}
 		}
+		translate([Rc/(Rt*Rt),0,0])
+		circle(r=1.5, $fn=20);
 	}
 }
 
