@@ -29,7 +29,7 @@ Cn= 15; //conic approximation nozzle at 15 deg.  typ 12-18 deg. smaller angle is
 Ln = (Re-Rt)*(sin(90)/sin (Cn));  //Conic Nozzle divergent section length, as determined by Da
 
 Lc = (Rc-Rt)*(sin(90)/sin(Ca)); //Conic Nozzle convergent section length, as determined by Ca
-Lf = 100/100; //Fractional length of bell compared to conic nozzle extension
+Lf = 80/100; //Fractional length of bell compared to conic nozzle extension
 
 Lcc = exp((.029*ln(pow(Rt*2,2)))+(.47*ln(Rt*2))+1.94); //Length of the combustion chamber
 
