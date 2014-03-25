@@ -5,15 +5,15 @@ Great Info here: http://www.braeunig.us/space/propuls.htm
 */
 
 //Radii
-Re = 20;	//Divergent nozzle exit radius. 
-Rt = 1.5;	//Throat radius. Wierd shapes can happen at low expansion ratios
-Rc = 10; 	//combution chamber radius. 
+//Re = 10;		//Divergent nozzle exit radius. 
+Rt = 1.5;	 	//Throat radius. Wierd shapes can happen at low expansion ratios
+Rc = 5; 	//combution chamber radius. 
 
-//expansion ratio is Area of Exit/Area of Throat
-//er = 20; //using a defined Expansion ratio to find Re
-//Re = Rt*sqrt(er); //Define exit radius by expansion ratio. comment out Re def above
+er = 30; //Expansion ratio
+Re = Rt*sqrt(er); //Define exit radius by expansion ratio. comment out Re def above
 echo(Re);
 
+//expansion ratio is Area of Exit/Area of Throat
 Pi= 3.14159;
 Ae=Pi*pow(Re,2);
 At=Pi*pow(Rt,2);
@@ -21,21 +21,22 @@ Expan=Ae/At;
 echo("Area of Exit:",Ae,"Are of Throat:",At,"Expansion Ratio:",Expan);
 
 //Angles
-Da = 30; //Divergent section angle to throat. 
-Ca = 30; //Convergent section angle to throat. typ 20-45 deg. Not as critical as Da.
+Da = 35; //Divergent section angle.
+Ca = 35; //Convergent section angle. typ 20-45 deg. Not as critical as Da.
 
-
-Cn= 15; //conic approximation nozzle at 15 deg. typ 12-18 deg. smaller angle is more efficient but longer and therefore heavier. 15 is standard as a compromise.
+Cn= 15; //conic approximation nozzle at 15 deg.  typ 12-18 deg. smaller angle is more efficient but longer and therefore heavier. 15 is standard as a compromise.
 Ln = (Re-Rt)*(sin(90)/sin (Cn));  //Conic Nozzle divergent section length, as determined by Da
+
 Lc = (Rc-Rt)*(sin(90)/sin(Ca)); //Conic Nozzle convergent section length, as determined by Ca
-Lf = 80/100; //Fractional length of bell compared to conic nozzle extension. length is typically 80% for best performance/weight/length
+Lf = 90/100; //Fractional length of bell compared to conic nozzle extension
 
-Lcc = exp((.029*ln(pow(Rt*2,2)))+(.47*ln(Rt*2))+1.94) //Length of the combustion chamber
+Lcc = exp((.029*ln(pow(Rt*2,2)))+(.47*ln(Rt*2))+1.94);
 
-//Scalling factors for throat at Rt
-x = 1.5*Rt; //convergent radius * throat radius.
-y= .382*Rt; //divergent radius * throat radius. also defines thickess of most walls
+x = 1.5*Rt;
+y= .382*Rt;
 z= (1.5-.382)*Rt;
+w= 2; //thickness of struts, so that they print cleanly
+h= Rt/2; //radius of holes in struts
 
 //control points of bezier curve
 p0= [0,0];
@@ -52,7 +53,7 @@ rotate_extrude(convexity = 10, $fn = 100){
 		divergent();
 		trimflat();
 	}
-	//combustionChamber();
+	combustionChamber();
 	//strutProfile(); //uncomment for solid support around the nozzle, instead of struts
 }
 }
@@ -171,7 +172,7 @@ module strutProfile(){
 			}
 		}
 		translate([Rc/2,0,0])
-		circle(r=1.5, $fn=20);
+		circle(r=h, $fn=20); //Holes in struts
 	}
 }
 
