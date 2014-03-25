@@ -24,18 +24,22 @@ echo("Area of Exit:",Ae,"Are of Throat:",At,"Expansion Ratio:",Expan);
 Da = 35; //Divergent section angle.
 Ca = 35; //Convergent section angle. typ 20-45 deg. Not as critical as Da.
 
+//other dimensions
 Cn= 15; //conic approximation nozzle at 15 deg.  typ 12-18 deg. smaller angle is more efficient but longer and therefore heavier. 15 is standard as a compromise.
 Ln = (Re-Rt)*(sin(90)/sin (Cn));  //Conic Nozzle divergent section length, as determined by Da
 
 Lc = (Rc-Rt)*(sin(90)/sin(Ca)); //Conic Nozzle convergent section length, as determined by Ca
-Lf = 90/100; //Fractional length of bell compared to conic nozzle extension
+Lf = 100/100; //Fractional length of bell compared to conic nozzle extension
 
-Lcc = exp((.029*ln(pow(Rt*2,2)))+(.47*ln(Rt*2))+1.94);
+Lcc = exp((.029*ln(pow(Rt*2,2)))+(.47*ln(Rt*2))+1.94); //Length of the combustion chamber
 
+//Convergent/divergent radius variables at Radius Rt. y also is the wall thickness 
 x = 1.5*Rt;
 y= .382*Rt;
 z= (1.5-.382)*Rt;
-w= 2; //thickness of struts, so that they print cleanly
+
+
+w= 1; //thickness of struts, so that they print cleanly
 h= Rt/2; //radius of holes in struts
 
 //control points of bezier curve
@@ -45,6 +49,7 @@ p1= [Hx,Hx/tan(Da)];
 p2= [Re-Rt,Ln*Lf];
 
 //--------------Rendering-------------
+
 rotate_extrude(convexity = 10, $fn = 100){
 	translate([Rt,0,0]){//sets throat radius
 	throat();
@@ -54,10 +59,15 @@ rotate_extrude(convexity = 10, $fn = 100){
 		trimflat();
 	}
 	combustionChamber();
-	//strutProfile(); //uncomment for solid support around the nozzle, instead of struts
 }
 }
-struts(6); //produces X number of struts around the throat for support
+intersection(){
+	rotate_extrude(convexity = 10, $fn = 100)
+	translate([Rt,0,0])//sets throat radius
+	strutProfile(); //uncomment for solid support around the nozzle, instead of struts
+	struts(6); //produces X number of struts around the throat for support
+
+}
 
 
 //--------------Modules-------------
@@ -152,28 +162,30 @@ module struts(numbStruts){
 		   rotate( i * 360 / numbStruts, [0, 1, 0])
 			translate([Rt,0,0])//translates to throat radius
 			linear_extrude(height=w, center=true) 
-				strutProfile();
+				difference(){
+					strutProfile();
+					translate([Rc/2,0,0])
+					circle(r=h, $fn=20); //Holes in struts
+				}
 		}
 	}
 }
 
 //---------------
 module strutProfile(){
-	difference(){
-		hull(){
-			polygon(points=[[Rc-Rt+y,(sin(90-Ca)*((Rc-Rt)/cos(90-Ca))+y+y)],[y,y+y],[Rc-Rt,y+y]]);
-			mirror([0,1,0])
-			difference(){
-			polygon(points=[p0,[cos(Da)*y,-sin(Da)*y],p1]);
-			translate([0,Rc,0])
-			square([Rc,Rc]);
-					translate([cos(Da)*y,-sin(Da)*y,0])
-					bezierBell(p0,p1,p2,30);//creates a bezier to trim strut
-			}
+	hull(){
+		polygon(points=[[Rc-Rt+y,(sin(90-Ca)*((Rc-Rt)/cos(90-Ca))+y+y)],[y,y+y],[Rc-Rt,y+y]]);
+		mirror([0,1,0])
+		difference(){
+		polygon(points=[p0,[cos(Da)*y,-sin(Da)*y],p1]);
+		translate([0,Re*1.20,0])//trims bell-touching part of strut so that it always touches bell
+		rotate(-60)
+		square([Re,Re]);
+				translate([cos(Da)*y,-sin(Da)*y,0])
+				bezierBell(p0,p1,p2,30);//creates a bezier to trim strut
 		}
-		translate([Rc/2,0,0])
-		circle(r=h, $fn=20); //Holes in struts
 	}
+
 }
 
 //---------------
