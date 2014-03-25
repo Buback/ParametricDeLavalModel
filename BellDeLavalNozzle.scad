@@ -10,6 +10,10 @@ Rt = 1.5;	//Throat radius. Wierd shapes can happen at low expansion ratios
 Rc = 10; 	//combution chamber radius. 
 
 //expansion ratio is Area of Exit/Area of Throat
+//er = 20; //using a defined Expansion ratio to find Re
+//Re = Rt*sqrt(er); //Define exit radius by expansion ratio. comment out Re def above
+echo(Re);
+
 Pi= 3.14159;
 Ae=Pi*pow(Re,2);
 At=Pi*pow(Rt,2);
