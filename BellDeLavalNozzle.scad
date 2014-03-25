@@ -9,6 +9,13 @@ Re = 20;	//Divergent nozzle exit radius.
 Rt = 1.5;	//Throat radius. Wierd shapes can happen at low expansion ratios
 Rc = 10; 	//combution chamber radius. 
 
+//expansion ratio is Area of Exit/Area of Throat
+Pi= 3.14159;
+Ae=Pi*pow(Re,2);
+At=Pi*pow(Rt,2);
+Expan=Ae/At;
+echo("Area of Exit:",Ae,"Are of Throat:",At,"Expansion Ratio:",Expan);
+
 //Angles
 Da = 30; //Divergent section angle to throat. 
 Ca = 30; //Convergent section angle to throat. typ 20-45 deg. Not as critical as Da.
