@@ -30,6 +30,8 @@ Ln = (Re-Rt)*(sin(90)/sin (Cn));  //Conic Nozzle divergent section length, as de
 Lc = (Rc-Rt)*(sin(90)/sin(Ca)); //Conic Nozzle convergent section length, as determined by Ca
 Lf = 80/100; //Fractional length of bell compared to conic nozzle extension. length is typically 80% for best performance/weight/length
 
+Lcc = exp((.029*ln(pow(Rt*2,2)))+(.47*ln(Rt*2))+1.94) //Length of the combustion chamber
+
 //Scalling factors for throat at Rt
 x = 1.5*Rt; //convergent radius * throat radius.
 y= .382*Rt; //divergent radius * throat radius. also defines thickess of most walls
@@ -62,30 +64,34 @@ struts(6); //produces X number of struts around the throat for support
 module throat(){
 	difference(){
 		union(){
-			translate([.382*Rt,0,0])
+			translate([y,0,0])
 //the divergent throat
-			circle(r=.382*Rt,$fn=80);
+			circle(r=y,$fn=80);
 				intersection(){
-				translate([1.5*Rt,0,0])
+				translate([x,0,0])
 //the convergent throat
-				circle(r=1.5*Rt,$fn=80);
+				circle(r=x,$fn=80);
 //isolates convergent radius
-				square(1.5*Rt); 
+				square(x); 
 				}
 		}
 //trims off excess on conv throat
-		translate([1.5*Rt,0,0])
-		circle(r=(1.5-.382)*Rt,$fn=80); 
+		translate([x,0,0])
+		circle(r=z,$fn=80); 
 //trims off excess on combustion chamber bottom
 		translate([x,0,0]){ 
 			translate([-(cos(Ca)*z),sin(Ca)*z,0])
 			rotate(a=-Ca)
 			square([y*3,Rc*2]);
 		}
-//Trims off combustion chamber at Rc. also in CC module
-		translate([Rc-Rt,0,0])
-		square([Rc*5,Rc*5]);
+		trimCCedge();
 	}
+}
+//---------------
+//Trims off combustion chamber at Rc.
+module trimCCedge(){
+		translate([Rc-Rt+y,0,0])//+y here connects CC to convergent section
+		square([Rc*5,Rc*5]);
 }
 
 //---------------
@@ -116,9 +122,7 @@ module convergent(){
 			rotate(a=-Ca)
 			square([y,Rc*5]);
 		}
-//Trims off combustion chamber at Rc. also in throat module.
-		translate([Rc-Rt,0,0])
-		square([Rc*5,Rc*5]);
+		trimCCedge();
 	}
 }
 //---------------
@@ -131,11 +135,13 @@ module trimflat(){
 
 //---------------
 module combustionChamber(){
-	translate([Rc-Rt,sin(Ca)*Rc+Rt,0])
-	square([y,Rc]);
-	translate([0-Rt,Rc+sin(Ca)*Rc+Rt,0])
-	square ([Rc+y,y]);
+thToCC=sin(90-Ca)*((Rt-Rc)/cos(90-Ca));
+	translate([Rc-Rt,-thToCC+y,0])
+	square([y,Lcc]);//sidewall
+	translate([0-Rt,-thToCC+(y/1.001)+Lcc,0])//1.001 is fudge factor so that CSG generates correctly. Remove when bug goes away.
+	square ([Rc+y,y]);//ceiling
 }
+
 
 //---------------
 //adds reinforcement around throat
@@ -144,16 +150,17 @@ module struts(numbStruts){
 		for ( i = [0 : (numbStruts-1)] ){
 		   rotate( i * 360 / numbStruts, [0, 1, 0])
 			translate([Rt,0,0])//translates to throat radius
-			linear_extrude(height=y, center=true) 
+			linear_extrude(height=w, center=true) 
 				strutProfile();
 		}
 	}
 }
 
+//---------------
 module strutProfile(){
 	difference(){
 		hull(){
-			polygon(points=[[Rc-Rt,(sin(90-Ca)*((Rc-Rt)/cos(90-Ca))+y)],[y,y+y],[Rc-Rt,y+y]]);
+			polygon(points=[[Rc-Rt+y,(sin(90-Ca)*((Rc-Rt)/cos(90-Ca))+y+y)],[y,y+y],[Rc-Rt,y+y]]);
 			mirror([0,1,0])
 			difference(){
 			polygon(points=[p0,[cos(Da)*y,-sin(Da)*y],p1]);
@@ -163,7 +170,7 @@ module strutProfile(){
 					bezierBell(p0,p1,p2,30);//creates a bezier to trim strut
 			}
 		}
-		translate([Rc/(Rt*Rt),0,0])
+		translate([Rc/2,0,0])
 		circle(r=1.5, $fn=20);
 	}
 }
