@@ -5,26 +5,29 @@ Great Info here: http://www.braeunig.us/space/propuls.htm
 */
 
 //Radii
-Re = 20;		//Divergent nozzle exit radius. 
-Rt = 1.5;	 	//Throat radius. Wierd shapes can happen at low expansion ratios
+Re = 20;	//Divergent nozzle exit radius. 
+Rt = 1.5;	//Throat radius. Wierd shapes can happen at low expansion ratios
 Rc = 10; 	//combution chamber radius. 
 
 //Angles
-Da = 30; //Divergent section angle. typ 12-18 deg. smaller angle is more efficient but longer and therefore heavier. 15 is standard as a compromise.
-Ca = 30; //Convergent section angle. typ 20-45 deg. Not as critical as Da.
+Da = 30; //Divergent section angle to throat. 
+Ca = 30; //Convergent section angle to throat. typ 20-45 deg. Not as critical as Da.
 
-Cn= 15; //conic approximation nozzle at 15 deg
+
+Cn= 15; //conic approximation nozzle at 15 deg. typ 12-18 deg. smaller angle is more efficient but longer and therefore heavier. 15 is standard as a compromise.
 Ln = (Re-Rt)*(sin(90)/sin (Cn));  //Conic Nozzle divergent section length, as determined by Da
 Lc = (Rc-Rt)*(sin(90)/sin(Ca)); //Conic Nozzle convergent section length, as determined by Ca
-Lf = 80/100; //Fractional length of bell compared to conic nozzle extension
-x = 1.5*Rt;
-y= .382*Rt;
+Lf = 80/100; //Fractional length of bell compared to conic nozzle extension. length is typically 80% for best performance/weight/length
+
+//Scalling factors for throat at Rt
+x = 1.5*Rt; //convergent radius * throat radius.
+y= .382*Rt; //divergent radius * throat radius. also defines thickess of most walls
 z= (1.5-.382)*Rt;
 
 //control points of bezier curve
 p0= [0,0];
-//p0=[(-cos(Da)*y),-sin(Da/90)*y,0];
-p1= [cos(Da)*(Re-Rt),sin(Ln)*Da];//Guessing on the intersection point.
+Hx= Re-(Rt+.382-(.382*cos(Da)));//height of p1 on x axis
+p1= [Hx,Hx/tan(Da)];
 p2= [Re-Rt,Ln*Lf];
 
 //--------------Rendering-------------
@@ -88,7 +91,7 @@ module divergent(){
 		}
 		}
 //trims nozzle at Re
-		translate([Re-Rt,-Re*25,0])
+		translate([Re-Rt+y,-Re*25,0])
 		square([Re*25,Re*25]);
 	}
 }
