@@ -5,33 +5,35 @@ Great Info here: http://www.braeunig.us/space/propuls.htm
 */
 
 //Radii
-//Re = 10;		//Divergent nozzle exit radius. 
-Rt = 1.5;	 	//Throat radius. Wierd shapes can happen at low expansion ratios
-Rc = 5; 	//combution chamber radius. 
+//Re = 10;							//Divergent nozzle exit radius. 
+Rt = 1.5;	 						//Throat radius. Wierd shapes can happen at low expansion ratios
+Rc = 5; 							//combution chamber radius. 
 
 er = 30; //Expansion ratio
-Re = Rt*sqrt(er); //Define exit radius by expansion ratio. comment out Re def above
-echo(Re);
+Re = Rt*sqrt(er); 						//Define exit radius by expansion ratio. comment out Re def above
+echo("Radius of Exit",Re);
 
 //expansion ratio is Area of Exit/Area of Throat
 Pi= 3.14159;
 Ae=Pi*pow(Re,2);
 At=Pi*pow(Rt,2);
 Expan=Ae/At;
-echo("Area of Exit:",Ae,"Are of Throat:",At,"Expansion Ratio:",Expan);
+echo("Area of Exit:",Ae);
+echo("Area of Throat:",At);
+echo("Expansion Ratio:",Expan);
 
 //Angles
-Da = 35; //Divergent section angle.
-Ca = 35; //Convergent section angle. typ 20-45 deg. Not as critical as Da.
+Da = 35; 							//Divergent section angle.
+Ca = 35; 							//Convergent section angle. typ 20-45 deg. Not as critical as Da.
 
 //other dimensions
-Cn= 15; //conic approximation nozzle at 15 deg.  typ 12-18 deg. smaller angle is more efficient but longer and therefore heavier. 15 is standard as a compromise.
-Ln = (Re-Rt)*(sin(90)/sin (Cn));  //Conic Nozzle divergent section length, as determined by Da
+Cn= 15; 							//conic approximation nozzle at 15 deg.  typ 12-18 deg. smaller angle is more efficient but longer and therefore heavier. 15 is standard as a compromise.
+Ln = (Re-Rt)*(sin(90)/sin (Cn));  				//Conic Nozzle divergent section length, as determined by Da
 
-Lc = (Rc-Rt)*(sin(90)/sin(Ca)); //Conic Nozzle convergent section length, as determined by Ca
-Lf = 80/100; //Fractional length of bell compared to conic nozzle extension
+Lc = (Rc-Rt)*(sin(90)/sin(Ca)); 				//Conic Nozzle convergent section length, as determined by Ca
+Lf = 80/100; 							//Fractional length of bell compared to conic nozzle extension
 
-Lcc = exp((.029*ln(pow(Rt*2,2)))+(.47*ln(Rt*2))+1.94); //Length of the combustion chamber
+Lcc = exp((.029*ln(pow(Rt*2,2)))+(.47*ln(Rt*2))+1.94); 		//Length of the combustion chamber
 
 //Convergent/divergent radius variables at Radius Rt. y also is the wall thickness 
 x = 1.5*Rt;
@@ -39,19 +41,19 @@ y= .382*Rt;
 z= (1.5-.382)*Rt;
 
 
-w= 1; //thickness of struts, so that they print cleanly
-h= Rt/2; //radius of holes in struts
+w= 1; 		//thickness of struts, so that they print cleanly
+h= Rt/2; 	//radius of holes in struts
 
 //control points of bezier curve
 p0= [0,0];
-Hx= Re-(Rt+.382-(.382*cos(Da)));//height of p1 on x axis
+Hx= Re-(Rt+.382-(.382*cos(Da)));				//height of p1 on x axis
 p1= [Hx,Hx/tan(Da)];
 p2= [Re-Rt,Ln*Lf];
 
 //--------------Rendering-------------
 
 rotate_extrude(convexity = 10, $fn = 100){
-	translate([Rt,0,0]){//sets throat radius
+	translate([Rt,0,0]){					//sets throat radius
 	throat();
 	convergent();
 	difference(){
@@ -64,8 +66,8 @@ rotate_extrude(convexity = 10, $fn = 100){
 intersection(){
 	rotate_extrude(convexity = 10, $fn = 100)
 	translate([Rt,0,0])//sets throat radius
-	strutProfile(); //uncomment for solid support around the nozzle, instead of struts
-	struts(6); //produces X number of struts around the throat for support
+	strutProfile(); 					
+	struts(6); 						//produces X number of struts around the throat for support
 
 }
 
@@ -101,7 +103,7 @@ module throat(){
 //---------------
 //Trims off combustion chamber at Rc.
 module trimCCedge(){
-		translate([Rc-Rt+y,0,0])//+y here connects CC to convergent section
+		translate([Rc-Rt+y,0,0])			//+y here connects CC to convergent section
 		square([Rc*5,Rc*5]);
 }
 
@@ -115,7 +117,7 @@ module divergent(){
 		difference(){
 		bezierBell(p0,p1,p2,30);
 		translate([cos(Da)*y,-sin(Da)*y,0])
-			bezierBell(p0,p1,p2,30);//creates a second bezier to shape the exterior of nozzle
+			bezierBell(p0,p1,p2,30);		//creates a second bezier to shape the exterior of nozzle
 		}
 		}
 //trims nozzle at Re
@@ -145,14 +147,15 @@ module trimflat(){
 }
 
 //---------------
+//the combustion chamber sidewalls
+//the CC volume includes the convergent cone. volume depends on combustion time, which depends on propellants used. Length is set by Rt. Rc is not calculated, and therefore the volume is not correct. This is just a placeholder for a proper combustion chamber module.
 module combustionChamber(){
 thToCC=sin(90-Ca)*((Rt-Rc)/cos(90-Ca));
 	translate([Rc-Rt,-thToCC+y,0])
-	square([y,Lcc]);//sidewall
-	translate([0-Rt,-thToCC+(y/1.001)+Lcc,0])//1.001 is fudge factor so that CSG generates correctly. Remove when bug goes away.
+	square([y,Lcc+thToCC]);					//sidewall
+	translate([0-Rt,-thToCC+(y/1.001)+(Lcc+thToCC),0])	//1.001 is fudge factor so that CSG generates correctly. Remove when bug goes away.
 	square ([Rc+y,y]);//ceiling
 }
-
 
 //---------------
 //adds reinforcement around throat
@@ -160,12 +163,12 @@ module struts(numbStruts){
 	rotate (90, [1,0,0]){
 		for ( i = [0 : (numbStruts-1)] ){
 		   rotate( i * 360 / numbStruts, [0, 1, 0])
-			translate([Rt,0,0])//translates to throat radius
+			translate([Rt,0,0])			//translates to throat radius
 			linear_extrude(height=w, center=true) 
 				difference(){
 					strutProfile();
-					translate([Rc/2,0,0])
-					circle(r=h, $fn=20); //Holes in struts
+					translate([Rc/2,0,0])	//Hole position
+					circle(r=h, $fn=20)	//Holes in struts
 				}
 		}
 	}
@@ -178,11 +181,11 @@ module strutProfile(){
 		mirror([0,1,0])
 		difference(){
 		polygon(points=[p0,[cos(Da)*y,-sin(Da)*y],p1]);
-		translate([0,Re*1.20,0])//trims bell-touching part of strut so that it always touches bell
+		translate([0,Re*1.20,0])			//trims bell-touching part of strut so that it always touches bell
 		rotate(-60)
 		square([Re,Re]);
 				translate([cos(Da)*y,-sin(Da)*y,0])
-				bezierBell(p0,p1,p2,30);//creates a bezier to trim strut
+				bezierBell(p0,p1,p2,30);	//creates a bezier to trim strut
 		}
 	}
 
@@ -206,6 +209,6 @@ module bezierBell(p0,p1,p2,steps=5) {
 			}
 		}
 	}
-	polygon(points=[p0,[cos(Da)*y,-sin(Da)*y],p1]);//adds thickness y to first tangent
-	polygon(points=[p2,p2+[y,0],p1]);//adds thickness y to second tangent
+	polygon(points=[p0,[cos(Da)*y,-sin(Da)*y],p1]);		//adds thickness y to first tangent
+	polygon(points=[p2,p2+[y,0],p1]);			//adds thickness y to second tangent
 }
