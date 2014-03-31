@@ -48,7 +48,7 @@ h= Rt/2; 	//radius of holes in struts
 p0= [0,0];
 Hx= Re-(Rt+.382-(.382*cos(Da)));				//height of p1 on x axis
 p1= [Hx,Hx/tan(Da)];
-p2= [Re-Rt,Ln*Lf];
+p2= [Re-Rt,Ln];
 
 //--------------Rendering-------------
 
@@ -142,8 +142,8 @@ module convergent(){
 //makes nozzle flat, for printing
 module trimflat(){
 	mirror([0,1,0])	
-	translate([0,Ln*Lf-5,0])
-	square([Re,y+5]);
+	translate([0,Ln*Lf,0])
+	square([Re,y+Ln-(Ln*Lf)]);
 }
 
 //---------------
