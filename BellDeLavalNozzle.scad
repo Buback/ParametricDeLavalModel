@@ -6,8 +6,8 @@ Great Info here: http://www.braeunig.us/space/propuls.htm
 
 //Radii
 //Re = 10;							//Divergent nozzle exit radius. 
-Rt = 1.5;	 						//Throat radius. Wierd shapes can happen at low expansion ratios
-Rc = 5; 							//combution chamber radius. 
+Rt = 5;	 						//Throat radius. Wierd shapes can happen at low expansion ratios
+Rc = 10; 							//combution chamber radius. 
 
 er = 30; //Expansion ratio
 Re = Rt*sqrt(er); 						//Define exit radius by expansion ratio. comment out Re def above
@@ -40,7 +40,7 @@ x = 1.5*Rt;
 y= .382*Rt;
 z= (1.5-.382)*Rt;
 
-
+Tcc= 2*y; //thickness of CC walls
 w= 1; 		//thickness of struts, so that they print cleanly
 h= Rt/2; 	//radius of holes in struts
 
@@ -52,7 +52,7 @@ p2= [Re-Rt,Ln];
 
 //--------------Rendering-------------
 
-rotate_extrude(convexity = 10, $fn = 100){
+//rotate_extrude(convexity = 10, $fn = 100){
 	translate([Rt,0,0]){					//sets throat radius
 	throat();
 	convergent();
@@ -62,14 +62,14 @@ rotate_extrude(convexity = 10, $fn = 100){
 	}
 	combustionChamber();
 }
-}
-intersection(){
-	rotate_extrude(convexity = 10, $fn = 100)
+//}
+//intersection(){
+	//rotate_extrude(convexity = 10, $fn = 100)
 	translate([Rt,0,0])//sets throat radius
 	strutProfile(); 					
-	struts(6); 						//produces X number of struts around the throat for support
+	//struts(6); 						//produces X number of struts around the throat for support
 
-}
+//}
 
 
 //--------------Modules-------------
@@ -103,7 +103,7 @@ module throat(){
 //---------------
 //Trims off combustion chamber at Rc.
 module trimCCedge(){
-		translate([Rc-Rt+y,0,0])			//+y here connects CC to convergent section
+		translate([Rc-Rt+Tcc,0,0])			//+y here connects CC to convergent section
 		square([Rc*5,Rc*5]);
 }
 
@@ -133,10 +133,13 @@ module convergent(){
 		translate([x,0,0]){
 			translate([-(cos(Ca)*x),sin(Ca)*x,0])
 			rotate(a=-Ca)
-			square([y,Rc*5]);
+			square([Tcc,Rc*5]);
+		
 		}
 		trimCCedge();
 	}
+	translate([x,0,0])
+	*polygon(points=[[-(cos(Ca)*x),sin(Ca)*x], [-(cos(Ca)*(x-Tcc))+.01,sin(Ca)*(x-Tcc)],[-(cos(Ca)*(x-Tcc)),-sin(Da)*(x+Tcc)],[-z,0]]);//again, issues with points occupying the same space, i think. added .01 fudge factor
 }
 //---------------
 //makes nozzle flat, for printing
@@ -152,9 +155,9 @@ module trimflat(){
 module combustionChamber(){
 thToCC=sin(90-Ca)*((Rt-Rc)/cos(90-Ca));
 	translate([Rc-Rt,-thToCC+y,0])
-	square([y,Lcc+thToCC]);					//sidewall
+	square([Tcc,Lcc+thToCC]);					//sidewall
 	translate([0-Rt,-thToCC+(y/1.001)+(Lcc+thToCC),0])	//1.001 is fudge factor so that CSG generates correctly. Remove when bug goes away.
-	square ([Rc+y,y]);//ceiling
+	square ([Rc+Tcc,Tcc]);//ceiling
 }
 
 //---------------
@@ -182,7 +185,7 @@ module strutProfile(){
 		difference(){
 		polygon(points=[p0,[cos(Da)*y,-sin(Da)*y],p1]);
 		translate([cos(Da)*y,-sin(Da)*y+y,0])
-		bezierBell(p0,p1,p2,30);			//creates a bezier to trim strut
+		bezierBell(p0,p1,p2,30);	//creates a bezier to trim strut
 		}
 	}
 
