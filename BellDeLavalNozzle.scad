@@ -168,7 +168,7 @@ module struts(numbStruts){
 				difference(){
 					strutProfile();
 					translate([Rc/2,0,0])	//Hole position
-					circle(r=h, $fn=20)	//Holes in struts
+					circle(r=h, $fn=20);	//Holes in struts
 				}
 		}
 	}
