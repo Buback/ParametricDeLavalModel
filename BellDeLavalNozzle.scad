@@ -181,11 +181,8 @@ module strutProfile(){
 		mirror([0,1,0])
 		difference(){
 		polygon(points=[p0,[cos(Da)*y,-sin(Da)*y],p1]);
-		translate([0,Re*1.20,0])			//trims bell-touching part of strut so that it always touches bell
-		rotate(-60)
-		square([Re,Re]);
-				translate([cos(Da)*y,-sin(Da)*y,0])
-				bezierBell(p0,p1,p2,30);	//creates a bezier to trim strut
+		translate([cos(Da)*y,-sin(Da)*y+y,0])
+		bezierBell(p0,p1,p2,30);			//creates a bezier to trim strut
 		}
 	}
 
