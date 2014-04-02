@@ -1,5 +1,6 @@
 /*
 DeLaval nozzle by buback
+Version 3.0
 Bezier curve algorithm by donb @ http://www.thingiverse.com/thing:8931
 Great Info here: http://www.braeunig.us/space/propuls.htm
 */
@@ -14,10 +15,10 @@ Re = Rt*sqrt(er); 						//Define exit radius by expansion ratio. comment out Re 
 echo("Radius of Exit",Re);
 
 //expansion ratio is Area of Exit/Area of Throat
-Pi= 3.14159;
+Pi= 3.14159265359;
 Ae=Pi*pow(Re,2);
 At=Pi*pow(Rt,2);
-Expan=Ae/At;
+Expan=Ae/At;						//calculated expansion ratio, for echo verification only
 echo("Area of Exit:",Ae);
 echo("Area of Throat:",At);
 echo("Expansion Ratio:",Expan);
@@ -41,8 +42,8 @@ y= .382*Rt;
 z= (1.5-.382)*Rt;
 
 Tcc= 2*y; //thickness of CC walls
-w= 1; 		//thickness of struts, so that they print cleanly
-h= Rt/2; 	//radius of holes in struts
+w= 2; 		//thickness of struts, so that they print cleanly
+h= 1.5; 	//radius of holes in struts
 
 //control points of bezier curve
 p0= [0,0];
@@ -52,28 +53,36 @@ p2= [Re-Rt,Ln];
 
 //--------------Rendering-------------
 
-//rotate_extrude(convexity = 10, $fn = 100){
-	translate([Rt,0,0]){					//sets throat radius
-	throat();
-	convergent();
-	difference(){
-		divergent();
-		trimflat();
-	}
-	combustionChamber();
+rotate_extrude(convexity = 10, $fn = 100){
+	2dEngine();	
 }
-//}
-//intersection(){
-	//rotate_extrude(convexity = 10, $fn = 100)
+intersection(){
+	rotate_extrude(convexity = 10, $fn = 100)
 	translate([Rt,0,0])//sets throat radius
 	strutProfile(); 					
-	//struts(6); 						//produces X number of struts around the throat for support
+	struts(6); 						//produces X number of struts around the throat for support
 
-//}
+}
 
 
 //--------------Modules-------------
-//Nozzle choke- M=1
+//the 2d profile fo the engine
+module 2dEngine(){
+	translate([Rt,0,0]){					//sets throat radius
+		throat();
+		convergent();
+		if(Tcc>y){
+			throatThickness();
+		}
+		difference(){
+			divergent();
+			trimflat();
+		}
+		combustionChamber();
+	}
+}
+
+//Nozzle throat- M=1
 module throat(){
 	difference(){
 		union(){
@@ -138,9 +147,8 @@ module convergent(){
 		}
 		trimCCedge();
 	}
-	translate([x,0,0])
-	*polygon(points=[[-(cos(Ca)*x),sin(Ca)*x], [-(cos(Ca)*(x-Tcc))+.01,sin(Ca)*(x-Tcc)],[-(cos(Ca)*(x-Tcc)),-sin(Da)*(x+Tcc)],[-z,0]]);//again, issues with points occupying the same space, i think. added .01 fudge factor
 }
+
 //---------------
 //makes nozzle flat, for printing
 module trimflat(){
@@ -161,7 +169,7 @@ thToCC=sin(90-Ca)*((Rt-Rc)/cos(90-Ca));
 }
 
 //---------------
-//adds reinforcement around throat
+//adds reinforcement struts around throat
 module struts(numbStruts){
 	rotate (90, [1,0,0]){
 		for ( i = [0 : (numbStruts-1)] ){
@@ -170,7 +178,7 @@ module struts(numbStruts){
 			linear_extrude(height=w, center=true) 
 				difference(){
 					strutProfile();
-					translate([Rc/2,0,0])	//Hole position
+					translate([y+(Rc/2),0,0])	//Hole position
 					circle(r=h, $fn=20);	//Holes in struts
 				}
 		}
@@ -178,9 +186,19 @@ module struts(numbStruts){
 }
 
 //---------------
+////sets throat wall thickness to Tcc+y/2
+module throatThickness(){
+
+	intersection(){
+					strutProfile();
+					translate([y/2,-(Rc*Rt)/2,0])
+					square([Tcc,Rc*Rt]);	//sets throat wall thickness to Tcc+y/2
+	}
+}
+
 module strutProfile(){
 	hull(){
-		polygon(points=[[Rc-Rt+y,(sin(90-Ca)*((Rc-Rt)/cos(90-Ca))+y+y)],[y,y+y],[Rc-Rt,y+y]]);
+		polygon(points=[[Rc-Rt+Tcc,(sin(90-Ca)*((Rc-Rt)/cos(90-Ca))+y+y)],[y,y+y],[Rc-Rt+Tcc,y+y]]);	//Tcc here makes strut 
 		mirror([0,1,0])
 		difference(){
 		polygon(points=[p0,[cos(Da)*y,-sin(Da)*y],p1]);
